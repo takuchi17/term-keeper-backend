@@ -1,0 +1,32 @@
+@startuml usecase diagram
+title 個人用単語索引アプリのユースケース図
+
+actor "ユーザー" as user
+rectangle 個人用単語索引アプリ {
+  usecase "会員登録・\nログインする" as UC1
+  usecase "未知の単語を\n登録する" as UC2
+  usecase "単語を\n編集する" as UC3
+  usecase "単語を\n更新する" as UC3_1
+  usecase "単語を\n削除する" as UC3_2
+  usecase "登録した単語を\n表示する" as UC4
+  usecase "登録した単語を\nすべて表示する" as UC4_1
+  usecase "登録した単語を\n検索(部分一致)で\n表示する" as UC4_2
+  usecase "登録した単語の内，\n説明が空なものを\n表示する" as UC4_3
+  usecase "登録した単語の内，\n説明があるものを\n表示する" as UC4_4
+  usecase "登録した単語を\nカテゴリ指定で\n表示する" as UC4_5
+}
+
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+
+UC3_1 -up-|> UC3 : Extends
+UC3_2 -up-|> UC3 : Extends
+UC4_1 -up-|> UC4 : Extends
+UC4_2 -up-|> UC4 : Extends
+UC4_3 -up-|> UC4 : Extends
+UC4_4 -up-|> UC4 : Extends
+UC4_5 -up-|> UC4 : Extends
+
+@enduml

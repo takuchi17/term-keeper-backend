@@ -1,0 +1,24 @@
+@startuml Context Diagram
+
+title 個人用単語索引アプリのコンテキスト図
+
+left to right direction
+
+actor "ユーザー"
+
+usecase "個人用単語索引アプリ"
+note top of 個人用単語索引アプリ
+  ユーザーが，
+  分からない単語を後から調べられるように，また，
+  調べた結果を保存，更新，削除，取得できるようにする．
+  どの端末でも利用できるようにWebアプリにする
+end note
+
+note top of ユーザー
+  使いたい機能のコマンドを実行する．
+end note
+
+
+:ユーザー: -- (個人用単語索引アプリ)
+
+@enduml
