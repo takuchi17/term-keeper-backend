@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  mysql:
+   image: mysql:8.0
+   container_name: mysql
+   ports:
+     - 3306:3306
+   environment:
+    MYSQL_ROOT_PASSWORD: mysql
+    MYSQL_DATABASE: term_keeper_db
+    MYSQL_USER: user
+    MYSQL_PASSWORD: password
+   healthcheck:
+     test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
+     interval: 3s
+     timeout: 5s
+     retries: 5
+     start_period: 5s
+   restart: always
+   volumes:
+     - ./external-apps/db/:/docker-entrypoint-initdb.d
+   networks:
+    - mysql-network
+
+  mysql_cli:
+    image: mysql:8.0
+    command: mysql -hmysql -uuser -ppassword term_keeper_db
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - mysql-network
+
+networks:
+  mysql-network:
+   driver: bridge
