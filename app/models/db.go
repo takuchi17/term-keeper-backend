@@ -7,14 +7,10 @@ import (
 	"log/slog"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/takuchi17/term-keeper/configs"
 )
 
-const (
-	InstanceMySQL int = iota
-	InstanceSqlite
-)
+const InstanceMySQL int = iota
 
 var DB *sql.DB
 
@@ -31,11 +27,6 @@ func CreateNewDBConnector(instance int) error {
 			configs.Config.DBPort,
 			configs.Config.DBName,
 		)
-		err = setupDatabase(driver, dsn)
-
-	case InstanceSqlite:
-		driver := "sqlite3"
-		dsn := "./test.sql"
 		err = setupDatabase(driver, dsn)
 
 	default:

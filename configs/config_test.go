@@ -12,7 +12,7 @@ func TestInitEnv(t *testing.T) {
 
 	assert.Equal(t, "development", Config.Env)
 	assert.Equal(t, "user", Config.DBUser)
-	assert.Equal(t, "localhost", Config.DBHost)
+	assert.Equal(t, "0.0.0.0", Config.DBHost)
 	assert.Equal(t, "term_keeper_db", Config.DBName)
 	assert.Equal(t, "password", Config.DBPassword)
 	assert.Equal(t, 3306, Config.DBPort)
