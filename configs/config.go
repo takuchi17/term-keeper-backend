@@ -25,8 +25,8 @@ func LoadEnv() error {
 }
 
 func GetEnvDefault(key, defVal string) string {
-	val, err := os.LookupEnv(key)
-	if !err {
+	val, ok := os.LookupEnv(key)
+	if !ok {
 		return defVal
 	}
 	return val
