@@ -31,7 +31,7 @@ func LoadEnv() error {
 	Config = ConfigList{
 		Env:                  getEnvDefault("APP_ENV", "development"),
 		DBUser:               getEnvDefault("DB_USER", "user"),
-		DBHost:               getEnvDefault("DB_HOST", "0.0.0.0"),
+		DBHost:               getEnvDefault("DB_HOST", "localhost"),
 		DBPort:               DBPort,
 		DBName:               getEnvDefault("DB_NAME", "term_keeper_db"),
 		DBPassword:           getEnvDefault("DB_PASSWORD", "password"),

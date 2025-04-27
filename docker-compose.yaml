@@ -11,10 +11,10 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "mysql"]
+      test: "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"
       interval: 3s
       timeout: 5s
-      retries: 5
+      retries: 10
       start_period: 5s
     restart: always
     volumes:
@@ -25,10 +25,9 @@ services:
   mysql-cli:
     image: mysql:8.0
     command: mysql -hmysql -uuser -ppassword term_keeper_db
-    environment:
-      MYSQL_ROOT_PASSWORD: password
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - mysql-network
 
