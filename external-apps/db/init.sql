@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS categories (
       PRIMARY KEY(id)
 );
 
-CREATE TABLE IF NOT EXISTS word_details (
+CREATE TABLE IF NOT EXISTS term_details (
       id INT AUTO_INCREMENT,
       name VARCHAR(255) NOT NULL,
       description VARCHAR(500),
@@ -32,18 +32,18 @@ CREATE TABLE IF NOT EXISTS word_details (
       PRIMARY KEY(id)
 );
 
-CREATE TABLE IF NOT EXISTS word_category_relations (
-      word_id INT NOT NULL,
+CREATE TABLE IF NOT EXISTS term_category_relations (
+      term_id INT NOT NULL,
       category_id INT NOT NULL,
-      PRIMARY KEY(word_id, category_id),
-      FOREIGN KEY (word_id) REFERENCES word_details(id) ON DELETE CASCADE,
+      PRIMARY KEY(term_id, category_id),
+      FOREIGN KEY (term_id) REFERENCES term_details(id) ON DELETE CASCADE,
       FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS user_word_relations (
+CREATE TABLE IF NOT EXISTS user_term_relations (
       id INT NOT NULL,
       user_id CHAR(26) NOT NULL,
-      FOREIGN KEY (id) REFERENCES word_details(id) ON DELETE CASCADE,
+      FOREIGN KEY (id) REFERENCES term_details(id) ON DELETE CASCADE,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       PRIMARY KEY(id, user_id)
 );
