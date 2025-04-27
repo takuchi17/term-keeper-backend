@@ -1,2 +1,0 @@
-{"time":"2025-04-27T10:39:13.3521382+09:00","level":"DEBUG","msg":"msg","s":"d"}
-{"time":"2025-04-27T11:20:15.7414352+09:00","level":"DEBUG","msg":"Env","envs":{"Env":"development","APICorsAllowsOrigins":["http://localhost:3001"]}}
