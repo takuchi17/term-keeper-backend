@@ -18,6 +18,7 @@ services:
       start_period: 5s
     restart: always
     volumes:
+      - mysql-data:/var/lib/mysql
       - ./external-apps/db/:/docker-entrypoint-initdb.d
     networks:
       - mysql-network
@@ -34,3 +35,6 @@ services:
 networks:
   mysql-network:
     driver: bridge
+
+volumes:
+  mysql-data:

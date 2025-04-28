@@ -8,42 +8,36 @@ CREATE TABLE IF NOT EXISTS users (
       email VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY(id)
 );
 
 CREATE TABLE IF NOT EXISTS categories (
       id INT AUTO_INCREMENT,
-      user_id CHAR(26),
+      fk_user_id CHAR(26),
       name VARCHAR(100),
-      hex_color_code CHAR(6),
+      hex_color_code CHAR(7),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (fk_user_id) REFERENCES users(id) ON DELETE CASCADE,
       PRIMARY KEY(id)
 );
 
-CREATE TABLE IF NOT EXISTS term_details (
+CREATE TABLE IF NOT EXISTS terms (
       id INT AUTO_INCREMENT,
+      fk_user_id CHAR(26),
       name VARCHAR(255) NOT NULL,
       description VARCHAR(500),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (fk_user_id) REFERENCES users(id) ON DELETE CASCADE,
       PRIMARY KEY(id)
 );
 
 CREATE TABLE IF NOT EXISTS term_category_relations (
-      term_id INT NOT NULL,
-      category_id INT NOT NULL,
-      PRIMARY KEY(term_id, category_id),
-      FOREIGN KEY (term_id) REFERENCES term_details(id) ON DELETE CASCADE,
-      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS user_term_relations (
-      id INT NOT NULL,
-      user_id CHAR(26) NOT NULL,
-      FOREIGN KEY (id) REFERENCES term_details(id) ON DELETE CASCADE,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-      PRIMARY KEY(id, user_id)
+      fk_term_id INT NOT NULL,
+      fk_category_id INT NOT NULL,
+      FOREIGN KEY (fk_term_id) REFERENCES terms(id) ON DELETE CASCADE,
+      FOREIGN KEY (fk_category_id) REFERENCES categories(id) ON DELETE CASCADE,
+      PRIMARY KEY(fk_term_id, fk_category_id)
 );
