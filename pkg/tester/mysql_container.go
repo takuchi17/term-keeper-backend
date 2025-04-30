@@ -3,11 +3,10 @@ package tester
 import (
 	"context"
 	"database/sql"
-	"net"
+	"fmt"
 	"path/filepath"
 
 	"github.com/docker/go-connections/nat"
-	"github.com/go-sql-driver/mysql"
 	testcontainers "github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )
@@ -27,19 +26,21 @@ func (s *MysqlContainer) OpenDB(ctx context.Context) (*sql.DB, error) {
 		return nil, err
 	}
 
-	cfg := mysql.NewConfig()
-	cfg.Net = "tcp"
-	cfg.Addr = net.JoinHostPort(host, port.Port())
-	cfg.DBName = "term_keeper_db_test"
-	cfg.User = "user"
-	cfg.Passwd = "password"
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		"user",
+		"password",
+		host,
+		port.Port(),
+		"term_keeper_db_test",
+	)
 
-	connector, err := mysql.NewConnector(cfg)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	return sql.OpenDB(connector), nil
+	return db, nil
 }
 
 func SetupMySQL(ctx context.Context) (*MysqlContainer, error) {
@@ -56,19 +57,21 @@ func SetupMySQL(ctx context.Context) (*MysqlContainer, error) {
 			"MYSQL_USER":                 "user",
 			"MYSQL_PASSWORD":             "password",
 			"MYSQL_ALLOW_EMPTY_PASSWORD": "yes",
+			"MYSQL_CHARACTER_SET_SERVER": "utf8mb4",
+			"MYSQL_COLLATION_SERVER":     "utf8mb4_unicode_ci",
 		},
 		ExposedPorts: []string{"3306/tcp"},
 		Mounts: testcontainers.ContainerMounts{
 			testcontainers.BindMount(initdbDir, "/docker-entrypoint-initdb.d"),
 		},
 		WaitingFor: wait.ForSQL("3306", "mysql", func(host string, port nat.Port) string {
-			cfg := mysql.NewConfig()
-			cfg.Net = "tcp"
-			cfg.Addr = net.JoinHostPort(host, port.Port())
-			cfg.DBName = "term_keeper_db_test"
-			cfg.User = "user"
-			cfg.Passwd = "password"
-			return cfg.FormatDSN()
+			return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+				"user",
+				"password",
+				host,
+				port.Port(),
+				"term_keeper_db_test",
+			)
 		}),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{

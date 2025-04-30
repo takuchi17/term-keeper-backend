@@ -1,5 +1,6 @@
 -- データベースの作成
 CREATE DATABASE IF NOT EXISTS term_keeper_db_test;
+SET NAMES utf8mb4;
 USE term_keeper_db_test;
 
 -- テーブル作成
