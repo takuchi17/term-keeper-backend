@@ -2,9 +2,10 @@ CREATE DATABASE IF NOT EXISTS term_keeper_db;
 
 USE term_keeper_db;
 
+-- テーブル作成
 CREATE TABLE IF NOT EXISTS users (
-      id CHAR(26),
-      name VARCHAR(32),
+      id CHAR(26) NOT NULL,
+      name VARCHAR(32) NOT NULL,
       email VARCHAR(255) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -13,9 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS categories (
-      id INT AUTO_INCREMENT,
-      fk_user_id CHAR(26),
-      name VARCHAR(100),
+      id INT AUTO_INCREMENT NOT NULL,
+      fk_user_id CHAR(26) NOT NULL,
+      name VARCHAR(100) NOT NULL,
       hex_color_code CHAR(7),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -24,8 +25,8 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 CREATE TABLE IF NOT EXISTS terms (
-      id INT AUTO_INCREMENT,
-      fk_user_id CHAR(26),
+      id INT AUTO_INCREMENT NOT NULL,
+      fk_user_id CHAR(26) NOT NULL,
       name VARCHAR(255) NOT NULL,
       description VARCHAR(500),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

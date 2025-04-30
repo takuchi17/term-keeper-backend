@@ -23,7 +23,7 @@ func (c *ConfigList) IsDevelopment() bool {
 }
 
 func LoadEnv() error {
-	DBPort, err := strconv.Atoi(getEnvDefault("MYSQL_PORT", "3306"))
+	DBPort, err := strconv.Atoi(getEnvDefault("MYSQL_PORT", "3307"))
 	if err != nil {
 		return nil
 	}
