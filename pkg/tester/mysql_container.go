@@ -12,11 +12,11 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-type mysqlContainer struct {
+type MysqlContainer struct {
 	testcontainers.Container
 }
 
-func (s *mysqlContainer) OpenDB(ctx context.Context) (*sql.DB, error) {
+func (s *MysqlContainer) OpenDB(ctx context.Context) (*sql.DB, error) {
 	host, err := s.Container.Host(ctx)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (s *mysqlContainer) OpenDB(ctx context.Context) (*sql.DB, error) {
 	return sql.OpenDB(connector), nil
 }
 
-func SetupMySQL(ctx context.Context) (*mysqlContainer, error) {
+func SetupMySQL(ctx context.Context) (*MysqlContainer, error) {
 	initdbDir, err := filepath.Abs("../../pkg/tester/testdata")
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func SetupMySQL(ctx context.Context) (*mysqlContainer, error) {
 		return nil, err
 	}
 
-	return &mysqlContainer{
+	return &MysqlContainer{
 		Container: container,
 	}, nil
 }

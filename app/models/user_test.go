@@ -7,19 +7,15 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/takuchi17/term-keeper/pkg/tester"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func TestRegisterUser(t *testing.T) {
-
 	ctx := context.Background()
-	container, err := tester.SetupMySQL(ctx)
-	require.NoError(t, err, "Failed to MySQL setup.")
-	defer container.Terminate(ctx)
+	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
 
-	DB, err = container.OpenDB(ctx)
-	require.NoError(t, err, "Failed to connect DB.")
+	require.NoError(t, err, "Failed to setup tester.")
+	defer container.Terminate(ctx)
 	defer DB.Close()
 
 	testCases := []struct {
@@ -113,12 +109,10 @@ func TestRegisterUser(t *testing.T) {
 func TestIsDuplicateEmail(t *testing.T) {
 
 	ctx := context.Background()
-	container, err := tester.SetupMySQL(ctx)
-	require.NoError(t, err, "Failed to MySQL setup.")
-	defer container.Terminate(ctx)
+	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
 
-	DB, err = container.OpenDB(ctx)
-	require.NoError(t, err, "Failed to connect DB.")
+	require.NoError(t, err, "Failed to setup tester.")
+	defer container.Terminate(ctx)
 	defer DB.Close()
 
 	testCases := []struct {
