@@ -1,6 +1,6 @@
 package queries
 
-const RegisterUser = `
+const CreateUser = `
 INSERT INTO users 
 (
   id, 

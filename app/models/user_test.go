@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func TestRegisterUser(t *testing.T) {
+func TestCreateUser(t *testing.T) {
 	ctx := context.Background()
 	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
 
@@ -61,7 +61,7 @@ func TestRegisterUser(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := RegisterUser(tc.username, tc.email, tc.password)
+			err := CreateUser(tc.username, tc.email, tc.password)
 
 			if tc.wantErr {
 				assert.Error(t, err, "Expected error, but an error did not occur.")

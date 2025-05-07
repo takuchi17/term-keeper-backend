@@ -25,7 +25,7 @@ type User struct {
 	Updated_at time.Time
 }
 
-func RegisterUser(
+func CreateUser(
 	name UserName,
 	email Email,
 	password Password,
@@ -52,7 +52,7 @@ func RegisterUser(
 		return err
 	}
 
-	_, err = DB.Exec(queries.RegisterUser, userId, name, email, hashedPassword)
+	_, err = DB.Exec(queries.CreateUser, userId, name, email, hashedPassword)
 	if err != nil {
 		slog.Error("Failed to register user", "err", err)
 		return err
