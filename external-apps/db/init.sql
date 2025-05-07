@@ -1,5 +1,5 @@
 CREATE DATABASE IF NOT EXISTS term_keeper_db;
-
+SET NAMES utf8mb4;
 USE term_keeper_db;
 
 -- テーブル作成

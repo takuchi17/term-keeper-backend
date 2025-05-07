@@ -20,7 +20,7 @@ func CreateNewDBConnector(instance int) error {
 	case InstanceMySQL:
 		driver := "mysql"
 		dsn := fmt.Sprintf(
-			"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True",
+			"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 			configs.Config.DBUser,
 			configs.Config.DBPassword,
 			configs.Config.DBHost,

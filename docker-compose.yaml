@@ -20,12 +20,13 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./external-apps/db/:/docker-entrypoint-initdb.d
+      - ./etc/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
     networks:
       - mysql-network
 
   mysql-cli:
     image: mysql:8.0
-    command: mysql -hmysql -uuser -ppassword term_keeper_db
+    command: mysql -hmysql -uuser -ppassword --default-character-set=utf8mb4 term_keeper_db
     depends_on:
       mysql:
         condition: service_healthy

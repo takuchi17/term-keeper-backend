@@ -1,6 +1,6 @@
 package queries
 
-const RegisterUser = `
+const CreateUser = `
 INSERT INTO users 
 (
   id, 
@@ -24,6 +24,24 @@ VALUES
 const IsDupulicateEmail = `
 SELECT 
   COUNT(*)
+FROM
+  users
+WHERE
+  email = ?
+`
+
+const GetUserById = `
+SELECT
+  name, email, created_at, updated_at
+FROM
+  users
+WHERE
+  id = ?
+`
+
+const GetUserByEmail = `
+SELECT
+  name, id, created_at, updated_at
 FROM
   users
 WHERE
