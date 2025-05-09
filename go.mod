@@ -6,6 +6,7 @@ require (
 	github.com/docker/go-connections v0.5.0
 	github.com/getkin/kin-openapi v0.132.0
 	github.com/go-sql-driver/mysql v1.9.2
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/stretchr/testify v1.10.0

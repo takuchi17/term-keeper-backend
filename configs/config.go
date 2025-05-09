@@ -14,6 +14,7 @@ type ConfigList struct {
 	DBName               string
 	DBPassword           string
 	APICorsAllowsOrigins []string
+	JWTSecret            string
 }
 
 var Config ConfigList
@@ -36,6 +37,7 @@ func LoadEnv() error {
 		DBName:               getEnvDefault("DB_NAME", "term_keeper_db"),
 		DBPassword:           getEnvDefault("DB_PASSWORD", "password"),
 		APICorsAllowsOrigins: []string{"http://localhost:3001"},
+		JWTSecret:            getEnvDefault("JWT_SECRET", "default-secret"),
 	}
 	return nil
 }
