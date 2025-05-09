@@ -1,6 +1,6 @@
-CREATE DATABASE IF NOT EXISTS term_keeper_db;
+CREATE DATABASE IF NOT EXISTS term_keeper_db_test;
 SET NAMES utf8mb4;
-USE term_keeper_db;
+USE term_keeper_db_test;
 
 -- テーブル作成
 CREATE TABLE IF NOT EXISTS users (
@@ -42,7 +42,6 @@ CREATE TABLE IF NOT EXISTS term_category_relations (
       FOREIGN KEY (fk_category_id) REFERENCES categories(id) ON DELETE CASCADE,
       PRIMARY KEY(fk_term_id, fk_category_id)
 );
-
 -- テストデータの挿入
 
 -- ユーザーデータ挿入
@@ -51,39 +50,40 @@ INSERT INTO users (id, name, email, password) VALUES
 ('01HGDJ5HXZD3K6WFYS9JU0A1XG', '佐藤花子', 'sato@example.com', '$2a$10$wxyzabcdefghijklmnopqr'),
 ('01HGDJ5J8KF4L7XGZT0KV1B2YH', '鈴木一郎', 'suzuki@example.com', '$2a$10$rstuvwxyzabcdefghijklm');
 
--- カテゴリーデータ挿入
-INSERT INTO categories (fk_user_id, name, hex_color_code) VALUES
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'プログラミング', '#FF5733'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'データベース', '#33A8FF'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'ネットワーク', '#33FF57'),
-('01HGDJ5HXZD3K6WFYS9JU0A1XG', '機械学習', '#D433FF'),
-('01HGDJ5HXZD3K6WFYS9JU0A1XG', 'クラウド', '#FFD633'),
-('01HGDJ5J8KF4L7XGZT0KV1B2YH', 'セキュリティ', '#FF3333');
+-- カテゴリーデータ挿入（ID付き）
+INSERT INTO categories (id, fk_user_id, name, hex_color_code) VALUES
+('CATE001PROG000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'プログラミング', '#FF5733'),
+('CATE002DBS0000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'データベース', '#33A8FF'),
+('CATE003NET0000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'ネットワーク', '#33FF57'),
+('CATE004ML00000000000000001', '01HGDJ5HXZD3K6WFYS9JU0A1XG', '機械学習', '#D433FF'),
+('CATE005CLOUD00000000000001', '01HGDJ5HXZD3K6WFYS9JU0A1XG', 'クラウド', '#FFD633'),
+('CATE006SEC0000000000000001', '01HGDJ5J8KF4L7XGZT0KV1B2YH', 'セキュリティ', '#FF3333');
 
--- 用語データ挿入
-INSERT INTO terms (fk_user_id, name, description) VALUES
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'SQL', 'Structured Query Language。リレーショナルデータベースの操作に使用される言語。'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'TCP/IP', 'インターネット通信の基盤となるプロトコル群。'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'Docker', 'コンテナ型の仮想化技術。'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'AWS', 'Amazonが提供するクラウドコンピューティングサービス。'),
-('01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'TLS', 'Transport Layer Security。通信の暗号化プロトコル。'),
-('01HGDJ5HXZD3K6WFYS9JU0A1XG', 'Python', '汎用プログラミング言語の一つ。機械学習やデータ分析によく使われる。'),
-('01HGDJ5HXZD3K6WFYS9JU0A1XG', 'Git', '分散型バージョン管理システム。'),
-('01HGDJ5J8KF4L7XGZT0KV1B2YH', 'REST API', 'REpresentational State Transferに基づくAPI設計アーキテクチャ。'),
-('01HGDJ5J8KF4L7XGZT0KV1B2YH', 'NoSQL', '非リレーショナルデータベース。'),
-('01HGDJ5J8KF4L7XGZT0KV1B2YH', 'CI/CD', '継続的インテグレーション/継続的デリバリー。');
+-- 用語データ挿入（ID付き）
+INSERT INTO terms (id, fk_user_id, name, description) VALUES
+('TERM001SQL000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'SQL', 'Structured Query Language。リレーショナルデータベースの操作に使用される言語。'),
+('TERM002TCP000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'TCP/IP', 'インターネット通信の基盤となるプロトコル群。'),
+('TERM003DOCK00000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'Docker', 'コンテナ型の仮想化技術。'),
+('TERM004AWS000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'AWS', 'Amazonが提供するクラウドコンピューティングサービス。'),
+('TERM005TLS000000000000001', '01HGDJ5GZRJ2J5VEXR8HT8V9WF', 'TLS', 'Transport Layer Security。通信の暗号化プロトコル。'),
+('TERM006PYTH00000000000001', '01HGDJ5HXZD3K6WFYS9JU0A1XG', 'Python', '汎用プログラミング言語の一つ。機械学習やデータ分析によく使われる。'),
+('TERM007GIT000000000000001', '01HGDJ5HXZD3K6WFYS9JU0A1XG', 'Git', '分散型バージョン管理システム。'),
+('TERM008REST00000000000001', '01HGDJ5J8KF4L7XGZT0KV1B2YH', 'REST API', 'REpresentational State Transferに基づくAPI設計アーキテクチャ。'),
+('TERM009NOSQL0000000000001', '01HGDJ5J8KF4L7XGZT0KV1B2YH', 'NoSQL', '非リレーショナルデータベース。'),
+('TERM010CICD00000000000001', '01HGDJ5J8KF4L7XGZT0KV1B2YH', 'CI/CD', '継続的インテグレーション/継続的デリバリー。');
 
--- カテゴリーと用語の関連付け
+-- カテゴリーと用語の関連付け（IDに一致させる）
 INSERT INTO term_category_relations (fk_term_id, fk_category_id) VALUES
-(1, 2), -- SQL → データベース
-(2, 3), -- TCP/IP → ネットワーク
-(3, 1), -- Docker → プログラミング
-(4, 5), -- AWS → クラウド
-(5, 6), -- TLS → セキュリティ
-(6, 1), -- Python → プログラミング
-(6, 4), -- Python → 機械学習
-(7, 1), -- Git → プログラミング
-(8, 1), -- REST API → プログラミング
-(8, 3), -- REST API → ネットワーク
-(9, 2), -- NoSQL → データベース
-(10, 1); -- CI/CD → プログラミング
+('TERM001SQL000000000000001', 'CATE002DBS0000000000000001'), -- SQL → データベース
+('TERM002TCP000000000000001', 'CATE003NET0000000000000001'), -- TCP/IP → ネットワーク
+('TERM003DOCK00000000000001', 'CATE001PROG000000000000001'), -- Docker → プログラミング
+('TERM004AWS000000000000001', 'CATE005CLOUD00000000000001'), -- AWS → クラウド
+('TERM005TLS000000000000001', 'CATE006SEC0000000000000001'), -- TLS → セキュリティ
+('TERM006PYTH00000000000001', 'CATE001PROG000000000000001'), -- Python → プログラミング
+('TERM006PYTH00000000000001', 'CATE004ML00000000000000001'), -- Python → 機械学習
+('TERM007GIT000000000000001', 'CATE001PROG000000000000001'), -- Git → プログラミング
+('TERM008REST00000000000001', 'CATE001PROG000000000000001'), -- REST API → プログラミング
+('TERM008REST00000000000001', 'CATE003NET0000000000000001'), -- REST API → ネットワーク
+('TERM009NOSQL0000000000001', 'CATE002DBS0000000000000001'), -- NoSQL → データベース
+('TERM010CICD00000000000001', 'CATE001PROG000000000000001'); -- CI/CD → プログラミング
+
