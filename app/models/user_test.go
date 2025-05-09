@@ -202,8 +202,8 @@ func TestGetUserById(t *testing.T) {
 				assert.Equal(t, tc.wantName, user.Name, "Username mismatch")
 				assert.Equal(t, tc.wantEmail, user.Email, "Email mismatch")
 
-				assert.False(t, user.Created_at.IsZero(), "Created_at should not be zero time")
-				assert.False(t, user.Updated_at.IsZero(), "Updated_at should not be zero time")
+				assert.False(t, user.CreatedAt.IsZero(), "Created_at should not be zero time")
+				assert.False(t, user.UpdatedAt.IsZero(), "Updated_at should not be zero time")
 			}
 		})
 	}
@@ -216,21 +216,6 @@ func TestGetUserByEmail(t *testing.T) {
 	require.NoError(t, err, "Failed to setup tester.")
 	defer container.Terminate(ctx)
 	defer DB.Close()
-
-	rows, err := DB.QueryContext(ctx, "SELECT id, name, email FROM users")
-	require.NoError(t, err, "Failed to query users table.")
-	defer rows.Close()
-
-	t.Log("--- users テーブルの内容 ---")
-	for rows.Next() {
-		var id, name, email string
-		if err := rows.Scan(&id, &name, &email); err != nil {
-			t.Logf("Error scanning user row: %v", err)
-			continue
-		}
-		t.Logf("ID: %s, Name: %s, Email: %s", id, name, email)
-	}
-	t.Log("-------------------------")
 
 	testCases := []struct {
 		name     string
@@ -269,8 +254,8 @@ func TestGetUserByEmail(t *testing.T) {
 				assert.Equal(t, tc.wantName, user.Name, "Username mismatch")
 				assert.Equal(t, tc.wantId, user.ID, "ID mismatch")
 
-				assert.False(t, user.Created_at.IsZero(), "Created_at should not be zero time")
-				assert.False(t, user.Updated_at.IsZero(), "Updated_at should not be zero time")
+				assert.False(t, user.CreatedAt.IsZero(), "Created_at should not be zero time")
+				assert.False(t, user.UpdatedAt.IsZero(), "Updated_at should not be zero time")
 			}
 		})
 	}

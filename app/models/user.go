@@ -18,12 +18,12 @@ type Password string
 type HashedPassword string
 
 type User struct {
-	ID         UserId
-	Name       UserName
-	Email      Email
-	Password   HashedPassword
-	Created_at time.Time
-	Updated_at time.Time
+	ID        UserId
+	Name      UserName
+	Email     Email
+	Password  HashedPassword
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func CreateUser(
@@ -89,7 +89,7 @@ func GetUserById(id UserId) (*User, error) {
 		return nil, err
 	}
 
-	return &User{ID: id, Name: name, Email: email, Created_at: createdAt, Updated_at: updatedAt}, nil
+	return &User{ID: id, Name: name, Email: email, CreatedAt: createdAt, UpdatedAt: updatedAt}, nil
 }
 
 func GetUserByEmail(email Email) (*User, error) {
@@ -107,5 +107,5 @@ func GetUserByEmail(email Email) (*User, error) {
 		return nil, err
 	}
 
-	return &User{ID: id, Name: name, Email: email, Password: password, Created_at: createdAt, Updated_at: updatedAt}, nil
+	return &User{ID: id, Name: name, Email: email, Password: password, CreatedAt: createdAt, UpdatedAt: updatedAt}, nil
 }
