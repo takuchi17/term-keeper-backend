@@ -9,6 +9,9 @@ import (
 
 func SetupMysqlContainerAndSetupDB(t *testing.T, ctx *context.Context) (*tester.MysqlContainer, error) {
 	container, err := tester.SetupMySQL(*ctx)
+	if err != nil {
+		return nil, err
+	}
 	DB, err = container.OpenDB(*ctx)
 	if err != nil {
 		return nil, err

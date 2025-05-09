@@ -41,7 +41,7 @@ WHERE
 
 const GetUserByEmail = `
 SELECT
-  name, id, created_at, updated_at
+  name, id, password, created_at, updated_at
 FROM
   users
 WHERE

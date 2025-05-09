@@ -46,6 +46,7 @@ func main() {
 
 	userHandler := &controllers.UserHandeler{}
 	http.HandleFunc("/api/v1/signup", userHandler.CreateUser)
+	http.HandleFunc("/api/v1/login", userHandler.Login)
 
 	log.Println("Server is running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))

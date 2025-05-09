@@ -15,12 +15,13 @@ type UserId string
 type UserName string
 type Email string
 type Password string
+type HashedPassword string
 
 type User struct {
 	ID         UserId
 	Name       UserName
 	Email      Email
-	Password   Password
+	Password   HashedPassword
 	Created_at time.Time
 	Updated_at time.Time
 }
@@ -70,6 +71,10 @@ func IsDuplicateEmail(email Email) (bool, error) {
 	return count > 0, nil
 }
 
+func IsSamePassword(hashedPassword HashedPassword, plainPassword Password) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
+}
+
 func GetUserById(id UserId) (*User, error) {
 	var (
 		name      UserName
@@ -91,15 +96,16 @@ func GetUserByEmail(email Email) (*User, error) {
 	var (
 		name      UserName
 		id        UserId
+		password  HashedPassword
 		createdAt time.Time
 		updatedAt time.Time
 	)
-	err := DB.QueryRow(queries.GetUserByEmail, email).Scan(&name, &id, &createdAt, &updatedAt)
+	err := DB.QueryRow(queries.GetUserByEmail, email).Scan(&name, &id, &password, &createdAt, &updatedAt)
 
 	if err != nil {
 		slog.Error("Failed to get user by email", "err", err)
 		return nil, err
 	}
 
-	return &User{ID: id, Name: name, Email: email, Created_at: createdAt, Updated_at: updatedAt}, nil
+	return &User{ID: id, Name: name, Email: email, Password: password, Created_at: createdAt, Updated_at: updatedAt}, nil
 }
