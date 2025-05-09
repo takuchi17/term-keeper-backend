@@ -52,7 +52,7 @@ func CreateUser(
 		return err
 	}
 
-	_, err = DB.Exec(queries.CreateUser, userId, name, email, hashedPassword)
+	_, err = DB.Exec(queries.CreateUser, userId, name, email, hashedPassword, t, t)
 	if err != nil {
 		slog.Error("Failed to register user", "err", err)
 		return err
