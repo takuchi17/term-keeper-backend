@@ -2,14 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"log"
+	"net/http"
+
 	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/swaggo/swag"
+
 	"github.com/takuchi17/term-keeper/api"
 	"github.com/takuchi17/term-keeper/app/models"
 	"github.com/takuchi17/term-keeper/configs"
 	"github.com/takuchi17/term-keeper/pkg/logger"
-	"log"
-	"net/http"
 )
 
 func main() {
