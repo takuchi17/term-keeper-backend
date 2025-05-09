@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS categories (
-      id INT AUTO_INCREMENT NOT NULL,
+      id CHAR(26) NOT NULL,
       fk_user_id CHAR(26) NOT NULL,
       name VARCHAR(100) NOT NULL,
       hex_color_code CHAR(7),
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 CREATE TABLE IF NOT EXISTS terms (
-      id INT AUTO_INCREMENT NOT NULL,
+      id CHAR(26) NOT NULL,
       fk_user_id CHAR(26) NOT NULL,
       name VARCHAR(255) NOT NULL,
       description VARCHAR(500),
@@ -36,8 +36,8 @@ CREATE TABLE IF NOT EXISTS terms (
 );
 
 CREATE TABLE IF NOT EXISTS term_category_relations (
-      fk_term_id INT NOT NULL,
-      fk_category_id INT NOT NULL,
+      fk_term_id CHAR(26) NOT NULL,
+      fk_category_id CHAR(26) NOT NULL,
       FOREIGN KEY (fk_term_id) REFERENCES terms(id) ON DELETE CASCADE,
       FOREIGN KEY (fk_category_id) REFERENCES categories(id) ON DELETE CASCADE,
       PRIMARY KEY(fk_term_id, fk_category_id)
