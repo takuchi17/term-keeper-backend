@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: term-keeper-api
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8080/api/v1
+tags:
+  - name: Metadata
+    description: Metadata related requests
+paths:
+  /signup:
+    post:
+      operationId: createUser
+      summary: Create a user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreateRequest"
+      responses:
+        "201":
+          description: OK
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /login:
+    post:
+      operationId: loginUser
+      summary: Login a user and return a JWT token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLoginRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserLoginResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /terms:
+    post:
+      operationId: createTerm
+      summary: Create a new term
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TermCreateRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get: 
+      operationId: getTerms
+      summary: Get a list of terms
+      parameters:
+        - name: query
+          in: query
+          required: false
+          description: Query string for searching terms
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: false
+          description: Category of the term
+          schema:
+            type: string
+        - name: sort
+          in: query
+          required: false
+          description: Sort order for the terms
+          schema:
+            type: string
+            enum:
+              - created_at_asc
+              - created_at_desc
+              - updated_at_asc
+              - updated_at_desc
+              - term_asc
+              - term_desc
+        - name: checked
+          in: query
+          required: false
+          description: Filter by checked status
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermListResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /terms/{id}:
+    patch:
+      operationId: updateTerm
+      summary: Update a term
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the term to update
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TermUpdateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TermResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTerm
+      summary: Delete a term
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the term to delete
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    UserCreateRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - username
+        - email
+        - password
+    UserLoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    UserLoginResponse:
+      type: object
+      description: JWT token response {userid, username, expiration}
+      properties:
+        token:
+          type: string
+    TermCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+      required:
+        - name
+    TermUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+      required:
+        - id
+    TermResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    TermListResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/TermResponse"
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
