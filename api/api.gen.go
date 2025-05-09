@@ -22,6 +22,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	BearerAuthScopes = "bearerAuth.Scopes"
+)
+
 // Defines values for GetTermsParamsSort.
 const (
 	CreatedAtAsc  GetTermsParamsSort = "created_at_asc"
@@ -186,6 +190,15 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
+	// GetCategories request
+	GetCategories(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteCategory request
+	DeleteCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetCategory request
+	GetCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// LoginUserWithBody request with any body
 	LoginUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -211,6 +224,42 @@ type ClientInterface interface {
 	UpdateTermWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateTerm(ctx context.Context, id string, body UpdateTermJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+}
+
+func (c *Client) GetCategories(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCategoriesRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteCategoryRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCategoryRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
 func (c *Client) LoginUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -331,6 +380,101 @@ func (c *Client) UpdateTerm(ctx context.Context, id string, body UpdateTermJSONR
 		return nil, err
 	}
 	return c.Client.Do(req)
+}
+
+// NewGetCategoriesRequest generates requests for GetCategories
+func NewGetCategoriesRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/categories")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewDeleteCategoryRequest generates requests for DeleteCategory
+func NewDeleteCategoryRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/categories/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetCategoryRequest generates requests for GetCategory
+func NewGetCategoryRequest(server string, id string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/categories/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 // NewLoginUserRequest calls the generic LoginUser builder with application/json body
@@ -674,6 +818,15 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
+	// GetCategoriesWithResponse request
+	GetCategoriesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCategoriesResponse, error)
+
+	// DeleteCategoryWithResponse request
+	DeleteCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCategoryResponse, error)
+
+	// GetCategoryWithResponse request
+	GetCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCategoryResponse, error)
+
 	// LoginUserWithBodyWithResponse request with any body
 	LoginUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginUserResponse, error)
 
@@ -699,6 +852,81 @@ type ClientWithResponsesInterface interface {
 	UpdateTermWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTermResponse, error)
 
 	UpdateTermWithResponse(ctx context.Context, id string, body UpdateTermJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTermResponse, error)
+}
+
+type GetCategoriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]string
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCategoriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCategoriesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteCategoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
+	JSON404      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteCategoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteCategoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetCategoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *string
+	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
+	JSON404      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetCategoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetCategoryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 type LoginUserResponse struct {
@@ -751,6 +979,8 @@ type GetTermsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *TermListResponse
 	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -774,6 +1004,8 @@ type CreateTermResponse struct {
 	HTTPResponse *http.Response
 	JSON201      *TermResponse
 	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -796,6 +1028,8 @@ type DeleteTermResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
 	JSON404      *ErrorResponse
 }
 
@@ -820,6 +1054,8 @@ type UpdateTermResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *TermResponse
 	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
 	JSON404      *ErrorResponse
 }
 
@@ -837,6 +1073,33 @@ func (r UpdateTermResponse) StatusCode() int {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
+}
+
+// GetCategoriesWithResponse request returning *GetCategoriesResponse
+func (c *ClientWithResponses) GetCategoriesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCategoriesResponse, error) {
+	rsp, err := c.GetCategories(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCategoriesResponse(rsp)
+}
+
+// DeleteCategoryWithResponse request returning *DeleteCategoryResponse
+func (c *ClientWithResponses) DeleteCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCategoryResponse, error) {
+	rsp, err := c.DeleteCategory(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteCategoryResponse(rsp)
+}
+
+// GetCategoryWithResponse request returning *GetCategoryResponse
+func (c *ClientWithResponses) GetCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCategoryResponse, error) {
+	rsp, err := c.GetCategory(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetCategoryResponse(rsp)
 }
 
 // LoginUserWithBodyWithResponse request with arbitrary body returning *LoginUserResponse
@@ -923,6 +1186,147 @@ func (c *ClientWithResponses) UpdateTermWithResponse(ctx context.Context, id str
 		return nil, err
 	}
 	return ParseUpdateTermResponse(rsp)
+}
+
+// ParseGetCategoriesResponse parses an HTTP response from a GetCategoriesWithResponse call
+func ParseGetCategoriesResponse(rsp *http.Response) (*GetCategoriesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCategoriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteCategoryResponse parses an HTTP response from a DeleteCategoryWithResponse call
+func ParseDeleteCategoryResponse(rsp *http.Response) (*DeleteCategoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteCategoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetCategoryResponse parses an HTTP response from a GetCategoryWithResponse call
+func ParseGetCategoryResponse(rsp *http.Response) (*GetCategoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetCategoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest string
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
 }
 
 // ParseLoginUserResponse parses an HTTP response from a LoginUserWithResponse call
@@ -1012,6 +1416,20 @@ func ParseGetTermsResponse(rsp *http.Response) (*GetTermsResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -1045,6 +1463,20 @@ func ParseCreateTermResponse(rsp *http.Response) (*CreateTermResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	}
 
 	return response, nil
@@ -1070,6 +1502,20 @@ func ParseDeleteTermResponse(rsp *http.Response) (*DeleteTermResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ErrorResponse
@@ -1111,6 +1557,20 @@ func ParseUpdateTermResponse(rsp *http.Response) (*UpdateTermResponse, error) {
 		}
 		response.JSON400 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ErrorResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -1126,22 +1586,25 @@ func ParseUpdateTermResponse(rsp *http.Response) (*UpdateTermResponse, error) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
