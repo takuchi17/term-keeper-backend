@@ -91,7 +91,7 @@ const UpdateTerm = `
 UPDATE
 	terms
 SET
-	name = ?, description = ?, category = ?, updated_at = ?
+	name = ?, description = ?, updated_at = ?
 WHERE
 	id = ?
 `

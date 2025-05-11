@@ -33,7 +33,7 @@ type TermAndCategory struct {
 	Categories []*Category
 }
 
-func CreateTerm(userId TermUserId, name TermName, description TermDescription, categoryIds []string) (*Term, error) {
+func CreateTerm(db SQLExecutor, userId TermUserId, name TermName, description TermDescription, categoryIds []CategoryId) (*Term, error) {
 	// cheack required fields
 	if name == "" {
 		return nil, errors.New("termname is required")
@@ -43,19 +43,17 @@ func CreateTerm(userId TermUserId, name TermName, description TermDescription, c
 	entropy := ulid.Monotonic(rand.New(rand.NewSource(t.UnixNano())), 0)
 	termId := TermId(ulid.MustNew(ulid.Timestamp(t), entropy).String())
 
-	_, err := DB.Exec(queries.CreateTerm, termId, userId, name, description, t, t)
+	_, err := db.Exec(queries.CreateTerm, termId, userId, name, description, t, t)
 	if err != nil {
 		slog.Error("Failed to create a term", "err", err)
 		return nil, err
 	}
 
 	// カテゴリIDを term_category_relations テーブルに挿入
-	for _, categoryId := range categoryIds {
-		_, err := DB.Exec(queries.CreateTermCategoryRelation, termId, categoryId)
-		if err != nil {
-			slog.Error("Failed to create term-category relation", "err", err)
-			return nil, err
-		}
+	err = LinkTermWithCategories(db, termId, categoryIds)
+	if err != nil {
+		slog.Error("Failed to link term with categories", "err", err)
+		return nil, err
 	}
 
 	return &Term{
@@ -69,8 +67,8 @@ func CreateTerm(userId TermUserId, name TermName, description TermDescription, c
 		nil
 }
 
-func GetTermsWithCategoriesByUserId(userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*TermAndCategory, error) {
-	terms, err := GetTermsByUserId(userId, query, category, sort, checked)
+func GetTermsWithCategoriesByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*TermAndCategory, error) {
+	terms, err := GetTermsByUserId(db, userId, query, category, sort, checked)
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +76,13 @@ func GetTermsWithCategoriesByUserId(userId TermUserId, query *string, category *
 	var result []*TermAndCategory
 	for _, term := range terms {
 		// 中間テーブルからcategoryIdを取得
-		categoryIds, err := GetCategoryIdsByTermId(term.ID)
+		categoryIds, err := GetCategoryIdsByTermId(db, term.ID)
 		if err != nil {
 			return nil, err
 		}
 
 		// カテゴリ情報を取得
-		categories, err := GetCategoriesByIds(categoryIds)
+		categories, err := GetCategoriesByIds(db, categoryIds)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +96,7 @@ func GetTermsWithCategoriesByUserId(userId TermUserId, query *string, category *
 	return result, nil
 }
 
-func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*Term, error) {
+func GetTermsByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*Term, error) {
 	var sb strings.Builder
 	var args []interface{}
 
@@ -144,7 +142,7 @@ func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *
 		}
 	}
 
-	rows, err := DB.Query(sb.String(), args...)
+	rows, err := db.Query(sb.String(), args...)
 	if err != nil {
 		slog.Error("Failed to get terms", "err", err)
 		return nil, err
@@ -164,45 +162,34 @@ func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *
 	return terms, nil
 }
 
-func (t *Term) Update(categoryIds []string) (*Term, error) {
+func (t *Term) Update(db SQLExecutor, categoryIds []CategoryId) (*Term, error) {
 	if t.Name == "" {
 		return nil, errors.New("termname is required")
 	}
 
-	_, err := DB.Exec(queries.UpdateTerm, t.Name, t.Description, t.UpdatedAt, t.ID)
+	_, err := db.Exec(queries.UpdateTerm, t.Name, t.Description, t.UpdatedAt, t.ID)
 	if err != nil {
 		slog.Error("Failed to update term", "err", err)
 		return nil, err
 	}
 
-	// 既存のカテゴリIDの関連を削除
-	_, err = DB.Exec(queries.DeleteTermCategoryRelations, t.ID)
+	err = UpdateTermCategories(db, t.ID, categoryIds)
 	if err != nil {
-		slog.Error("Failed to delete term-category relations", "err", err)
+		slog.Error("Failed to update term categpory relations", "err", err)
 		return nil, err
-	}
-
-	// 新しいカテゴリIDを term_category_relations テーブルに挿入
-	for _, categoryId := range categoryIds {
-		_, err := DB.Exec(queries.CreateTermCategoryRelation, t.ID, categoryId)
-		if err != nil {
-			slog.Error("Failed to create term-category relation", "err", err)
-			return nil, err
-		}
 	}
 
 	return t, nil
 }
 
-func (t *Term) Delete() error {
-	_, err := DB.Exec(queries.DeleteTerm, t.ID)
+func (t *Term) Delete(db SQLExecutor) error {
+	_, err := db.Exec(queries.DeleteTerm, t.ID)
 	if err != nil {
 		slog.Error("Failed to delete term", "err", err)
 		return err
 	}
 
-	// 既存のカテゴリIDの関連を削除
-	_, err = DB.Exec(queries.DeleteTermCategoryRelations, t.ID)
+	_, err = db.Exec(queries.DeleteTermCategoryRelations, t.ID)
 	if err != nil {
 		slog.Error("Failed to delete term-category relations", "err", err)
 		return err

@@ -22,9 +22,9 @@ type Category struct {
 }
 
 // 単体取得
-func GetCategoryById(id CategoryId) (*Category, error) {
+func GetCategoryById(db SQLExecutor, id CategoryId) (*Category, error) {
 	// DBからカテゴリを取得
-	row := DB.QueryRow("SELECT id, name, fk_user_id, hex_color_code, created_at, updated_at FROM categories WHERE id = ?", id)
+	row := db.QueryRow("SELECT id, name, fk_user_id, hex_color_code, created_at, updated_at FROM categories WHERE id = ?", id)
 	var category Category
 	err := row.Scan(&category.ID, &category.Name, &category.FKUserId, &category.HexColorCode, &category.CreatedAt, &category.UpdatedAt)
 	if err != nil {
@@ -33,7 +33,7 @@ func GetCategoryById(id CategoryId) (*Category, error) {
 	return &category, nil
 }
 
-func GetCategoriesByIds(ids []string) ([]*Category, error) {
+func GetCategoriesByIds(db SQLExecutor, ids []CategoryId) ([]*Category, error) {
 	if len(ids) == 0 {
 		return []*Category{}, nil
 	}
@@ -50,7 +50,7 @@ func GetCategoriesByIds(ids []string) ([]*Category, error) {
 		args[i] = v
 	}
 
-	rows, err := DB.Query(query, args...)
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

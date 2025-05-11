@@ -24,11 +24,11 @@ func main() {
 	defer logFile.Close()
 
 	// setup database
-	err = models.CreateNewDBConnector(models.InstanceMySQL)
+	db, err := models.NewDB(models.InstanceMySQL)
 	if err != nil {
 		log.Fatal("Failed to connect database: ", err)
 	}
-	defer models.DB.Close()
+	defer db.Close()
 
 	swagger, err := api.GetSwagger()
 	if err != nil {
@@ -44,7 +44,7 @@ func main() {
 		http.Handle("/swagger/", httpSwagger.WrapHandler)
 	}
 
-	userHandler := &controllers.UserHandeler{}
+	userHandler := &controllers.UserHandeler{DB: db}
 	http.HandleFunc("/api/v1/signup", userHandler.CreateUser)
 	http.HandleFunc("/api/v1/login", userHandler.Login)
 

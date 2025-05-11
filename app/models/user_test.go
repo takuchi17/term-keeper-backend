@@ -1,7 +1,6 @@
 package models
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -11,13 +10,6 @@ import (
 )
 
 func TestCreateUser(t *testing.T) {
-	ctx := context.Background()
-	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
-
-	require.NoError(t, err, "Failed to setup tester.")
-	defer container.Terminate(ctx)
-	defer DB.Close()
-
 	testCases := []struct {
 		name     string
 		username UserName
@@ -53,7 +45,7 @@ func TestCreateUser(t *testing.T) {
 		{
 			name:     "Dupulicate email",
 			username: "example5",
-			email:    "example1@gmail.com",
+			email:    "yamada@example.com",
 			password: "password",
 			wantErr:  true,
 		},
@@ -61,7 +53,10 @@ func TestCreateUser(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := CreateUser(tc.username, tc.email, tc.password)
+			tx, err := DB.Begin()
+			require.NoError(t, err)
+			defer tx.Rollback()
+			err = CreateUser(tx, tc.username, tc.email, tc.password)
 
 			if tc.wantErr {
 				assert.Error(t, err, "Expected error, but an error did not occur.")
@@ -79,7 +74,7 @@ func TestCreateUser(t *testing.T) {
 				updatedAt time.Time
 			)
 
-			DB.QueryRow(`
+			tx.QueryRow(`
     					SELECT id, name, email, password, created_at, updated_at
     					FROM users WHERE email = ?
 						`, tc.email).
@@ -101,13 +96,6 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestIsDuplicateEmail(t *testing.T) {
-	ctx := context.Background()
-	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
-
-	require.NoError(t, err, "Failed to setup tester.")
-	defer container.Terminate(ctx)
-	defer DB.Close()
-
 	testCases := []struct {
 		name     string
 		username UserName
@@ -133,7 +121,10 @@ func TestIsDuplicateEmail(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			isDuplicate, err := IsDuplicateEmail(tc.email)
+			tx, err := DB.Begin()
+			require.NoError(t, err)
+			defer tx.Rollback()
+			isDuplicate, err := IsDuplicateEmail(tx, tc.email)
 
 			assert.NoError(t, err, "Expected no error, but an error occurred.")
 
@@ -143,27 +134,9 @@ func TestIsDuplicateEmail(t *testing.T) {
 }
 
 func TestGetUserById(t *testing.T) {
-	ctx := context.Background()
-	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
-
-	require.NoError(t, err, "Failed to setup tester.")
-	defer container.Terminate(ctx)
-	defer DB.Close()
-
-	rows, err := DB.QueryContext(ctx, "SELECT id, name, email FROM users")
+	rows, err := DB.Query("SELECT id, name, email FROM users")
 	require.NoError(t, err, "Failed to query users table.")
 	defer rows.Close()
-
-	t.Log("--- users テーブルの内容 ---")
-	for rows.Next() {
-		var id, name, email string
-		if err := rows.Scan(&id, &name, &email); err != nil {
-			t.Logf("Error scanning user row: %v", err)
-			continue
-		}
-		t.Logf("ID: %s, Name: %s, Email: %s", id, name, email)
-	}
-	t.Log("-------------------------")
 
 	testCases := []struct {
 		name      string
@@ -188,7 +161,10 @@ func TestGetUserById(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			user, err := GetUserById(tc.id)
+			tx, err := DB.Begin()
+			require.NoError(t, err)
+			defer tx.Rollback()
+			user, err := GetUserById(tx, tc.id)
 
 			if tc.wantErr {
 				assert.Error(t, err, "Expected error, but an error did not occur.")
@@ -210,13 +186,6 @@ func TestGetUserById(t *testing.T) {
 }
 
 func TestGetUserByEmail(t *testing.T) {
-	ctx := context.Background()
-	container, err := SetupMysqlContainerAndSetupDB(t, &ctx)
-
-	require.NoError(t, err, "Failed to setup tester.")
-	defer container.Terminate(ctx)
-	defer DB.Close()
-
 	testCases := []struct {
 		name     string
 		email    Email
@@ -240,7 +209,10 @@ func TestGetUserByEmail(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			user, err := GetUserByEmail(tc.email)
+			tx, err := DB.Begin()
+			require.NoError(t, err)
+			defer tx.Rollback()
+			user, err := GetUserByEmail(tx, tc.email)
 
 			if tc.wantErr {
 				assert.Error(t, err, "Expected error, but an error did not occur.")
