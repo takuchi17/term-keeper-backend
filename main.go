@@ -45,7 +45,7 @@ func main() {
 	}
 
 	userHandler := &controllers.UserHandeler{DB: db}
-	http.HandleFunc("/api/v1/signup", userHandler.CreateUser)
+	http.HandleFunc("/api/v1/signup", userHandler.Create)
 	http.HandleFunc("/api/v1/login", userHandler.Login)
 
 	log.Println("Server is running at http://localhost:8080")

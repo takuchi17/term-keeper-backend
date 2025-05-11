@@ -16,7 +16,6 @@ type (
 	TermUserId      UserId
 	TermName        string
 	TermDescription string
-	TermCategoryId  CategoryId
 )
 
 type Term struct {
