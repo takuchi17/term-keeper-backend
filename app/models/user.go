@@ -18,19 +18,15 @@ type Password string
 type HashedPassword string
 
 type User struct {
-	ID         UserId
-	Name       UserName
-	Email      Email
-	Password   HashedPassword
-	Created_at time.Time
-	Updated_at time.Time
+	ID        UserId
+	Name      UserName
+	Email     Email
+	Password  HashedPassword
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
-func CreateUser(
-	name UserName,
-	email Email,
-	password Password,
-) error {
+func CreateUser(db SQLExecutor, name UserName, email Email, password Password) error {
 	// cheack required fields
 	if name == "" {
 		return errors.New("username is required")
@@ -53,7 +49,7 @@ func CreateUser(
 		return err
 	}
 
-	_, err = DB.Exec(queries.CreateUser, userId, name, email, hashedPassword, t, t)
+	_, err = db.Exec(queries.CreateUser, userId, name, email, hashedPassword, t, t)
 	if err != nil {
 		slog.Error("Failed to register user", "err", err)
 		return err
@@ -61,9 +57,9 @@ func CreateUser(
 	return nil
 }
 
-func IsDuplicateEmail(email Email) (bool, error) {
+func IsDuplicateEmail(db SQLExecutor, email Email) (bool, error) {
 	var count int
-	err := DB.QueryRow(queries.IsDupulicateEmail, email).Scan(&count)
+	err := db.QueryRow(queries.IsDupulicateEmail, email).Scan(&count)
 	if err != nil {
 		slog.Error("Failed to check duplicate of email", "err", err)
 		return false, err
@@ -71,28 +67,28 @@ func IsDuplicateEmail(email Email) (bool, error) {
 	return count > 0, nil
 }
 
-func IsSamePassword(hashedPassword HashedPassword, plainPassword Password) error {
+func IsSamePassword(db SQLExecutor, hashedPassword HashedPassword, plainPassword Password) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 }
 
-func GetUserById(id UserId) (*User, error) {
+func GetUserById(db SQLExecutor, id UserId) (*User, error) {
 	var (
 		name      UserName
 		email     Email
 		createdAt time.Time
 		updatedAt time.Time
 	)
-	err := DB.QueryRow(queries.GetUserById, id).Scan(&name, &email, &createdAt, &updatedAt)
+	err := db.QueryRow(queries.GetUserById, id).Scan(&name, &email, &createdAt, &updatedAt)
 
 	if err != nil {
 		slog.Error("Failed to get user by id", "err", err)
 		return nil, err
 	}
 
-	return &User{ID: id, Name: name, Email: email, Created_at: createdAt, Updated_at: updatedAt}, nil
+	return &User{ID: id, Name: name, Email: email, CreatedAt: createdAt, UpdatedAt: updatedAt}, nil
 }
 
-func GetUserByEmail(email Email) (*User, error) {
+func GetUserByEmail(db SQLExecutor, email Email) (*User, error) {
 	var (
 		name      UserName
 		id        UserId
@@ -100,12 +96,12 @@ func GetUserByEmail(email Email) (*User, error) {
 		createdAt time.Time
 		updatedAt time.Time
 	)
-	err := DB.QueryRow(queries.GetUserByEmail, email).Scan(&name, &id, &password, &createdAt, &updatedAt)
+	err := db.QueryRow(queries.GetUserByEmail, email).Scan(&name, &id, &password, &createdAt, &updatedAt)
 
 	if err != nil {
 		slog.Error("Failed to get user by email", "err", err)
 		return nil, err
 	}
 
-	return &User{ID: id, Name: name, Email: email, Password: password, Created_at: createdAt, Updated_at: updatedAt}, nil
+	return &User{ID: id, Name: name, Email: email, Password: password, CreatedAt: createdAt, UpdatedAt: updatedAt}, nil
 }

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/takuchi17/term-keeper/configs"
@@ -12,10 +11,13 @@ import (
 
 const InstanceMySQL int = iota
 
-var DB *sql.DB
+type SQLExecutor interface {
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+}
 
-func CreateNewDBConnector(instance int) error {
-	var err error
+func NewDB(instance int) (*sql.DB, error) {
 	switch instance {
 	case InstanceMySQL:
 		driver := "mysql"
@@ -27,25 +29,13 @@ func CreateNewDBConnector(instance int) error {
 			configs.Config.DBPort,
 			configs.Config.DBName,
 		)
-		err = setupDatabase(driver, dsn)
+		db, err := sql.Open(driver, dsn)
+		if err != nil {
+			return nil, err
+		}
+		return db, nil
 
 	default:
-		return errors.New("invalid sql db instance")
+		return nil, errors.New("invalid sql db instance")
 	}
-
-	if err != nil {
-		slog.Error("Failed to setup database", "err", err)
-		panic(err)
-	}
-	return nil
-}
-
-func setupDatabase(driver, dsn string) error {
-	db, err := sql.Open(driver, dsn)
-	if err != nil {
-		return err
-	}
-
-	DB = db
-	return nil
 }
