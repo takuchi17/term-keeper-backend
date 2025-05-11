@@ -248,7 +248,42 @@ paths:
               schema:
                 type: array
                 items:
-                  type: string
+                  $ref: "#/components/schemas/CategoryResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createCategory
+      summary: Create a new category
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryCreateRequest"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Unauthorized
           content:
@@ -262,25 +297,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
   /categories/{id}:
-    get:
-      operationId: getCategory
-      summary: Get a category by ID
+    put:
+      operationId: updateCategory
+      summary: Update a category
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          description: ID of the category to retrieve
+          description: ID of the category to update
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdateRequest"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: string
+                $ref: "#/components/schemas/CategoryResponse"
         "400":
           description: Bad Request
           content:
@@ -373,6 +413,9 @@ components:
           format: email
         password:
           type: string
+      required:
+        - email
+        - password
     UserLoginResponse:
       type: object
       description: JWT token response {userid, username, expiration}
@@ -386,8 +429,10 @@ components:
           type: string
         description:
           type: string
-        category:
-          type: string
+        categoryIds:
+          type: array
+          items:
+            type: string
       required:
         - name
     TermUpdateRequest:
@@ -399,8 +444,10 @@ components:
           type: string
         description:
           type: string
-        category:
-          type: string
+        categoryIds:
+          type: array
+          items:
+            type: string
       required:
         - id
     TermResponse:
@@ -412,8 +459,10 @@ components:
           type: string
         description:
           type: string
-        category:
-          type: string
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryResponse"
         created_at:
           type: string
           format: date-time
@@ -424,6 +473,44 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/TermResponse"
+    CategoryCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        hex_color_code:
+          type: string
+          pattern: "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$"
+      required:
+        - name
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hex_color_code:
+          type: string
+          pattern: "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$"
+      required:
+        - id
+        - name
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        hex_color_code:
+          type: string
+          pattern: "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
     ErrorResponse:
       type: object
       properties:

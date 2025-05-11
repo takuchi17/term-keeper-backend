@@ -16,6 +16,7 @@ type (
 	TermUserId      UserId
 	TermName        string
 	TermDescription string
+	TermCategoryId  CategoryId
 )
 
 type Term struct {
@@ -27,7 +28,12 @@ type Term struct {
 	UpdatedAt   time.Time
 }
 
-func CreateTerm(userId TermUserId, name TermName, description TermDescription) (*Term, error) {
+type TermAndCategory struct {
+	Term       *Term
+	Categories []*Category
+}
+
+func CreateTerm(userId TermUserId, name TermName, description TermDescription, categoryIds []string) (*Term, error) {
 	// cheack required fields
 	if name == "" {
 		return nil, errors.New("termname is required")
@@ -43,6 +49,15 @@ func CreateTerm(userId TermUserId, name TermName, description TermDescription) (
 		return nil, err
 	}
 
+	// カテゴリIDを term_category_relations テーブルに挿入
+	for _, categoryId := range categoryIds {
+		_, err := DB.Exec(queries.CreateTermCategoryRelation, termId, categoryId)
+		if err != nil {
+			slog.Error("Failed to create term-category relation", "err", err)
+			return nil, err
+		}
+	}
+
 	return &Term{
 			ID:          termId,
 			FKUserId:    userId,
@@ -52,6 +67,35 @@ func CreateTerm(userId TermUserId, name TermName, description TermDescription) (
 			UpdatedAt:   t,
 		},
 		nil
+}
+
+func GetTermsWithCategoriesByUserId(userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*TermAndCategory, error) {
+	terms, err := GetTermsByUserId(userId, query, category, sort, checked)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*TermAndCategory
+	for _, term := range terms {
+		// 中間テーブルからcategoryIdを取得
+		categoryIds, err := GetCategoryIdsByTermId(term.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		// カテゴリ情報を取得
+		categories, err := GetCategoriesByIds(categoryIds)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, &TermAndCategory{
+			Term:       term,
+			Categories: categories,
+		})
+	}
+
+	return result, nil
 }
 
 func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*Term, error) {
@@ -75,8 +119,9 @@ func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *
 		sb.WriteString(queries.GetTermsFillterByCategory)
 		args = append(args, *category)
 	}
+
 	if checked != nil {
-		sb.WriteString(queries.GetTermsFillterByChecked)
+		sb.WriteString(queries.GetTermsFilterByChecked)
 		args = append(args, *checked)
 	}
 
@@ -90,7 +135,7 @@ func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *
 		case "updated_at_asc":
 			sb.WriteString(queries.GetTermsSortByUpdatedAsc)
 		case "updated_at_desc":
-			sb.WriteString(queries.GetTermsSortByCreatedAsc)
+			sb.WriteString(queries.GetTermsSortByCreatedDesc)
 		case "term_asc":
 			sb.WriteString(queries.GetTermsSortByNameAsc)
 		case "term_desc":
@@ -119,7 +164,7 @@ func GetTermsByUserId(userId TermUserId, query *string, category *string, sort *
 	return terms, nil
 }
 
-func (t *Term) Update() (*Term, error) {
+func (t *Term) Update(categoryIds []string) (*Term, error) {
 	if t.Name == "" {
 		return nil, errors.New("termname is required")
 	}
@@ -130,5 +175,38 @@ func (t *Term) Update() (*Term, error) {
 		return nil, err
 	}
 
+	// 既存のカテゴリIDの関連を削除
+	_, err = DB.Exec(queries.DeleteTermCategoryRelations, t.ID)
+	if err != nil {
+		slog.Error("Failed to delete term-category relations", "err", err)
+		return nil, err
+	}
+
+	// 新しいカテゴリIDを term_category_relations テーブルに挿入
+	for _, categoryId := range categoryIds {
+		_, err := DB.Exec(queries.CreateTermCategoryRelation, t.ID, categoryId)
+		if err != nil {
+			slog.Error("Failed to create term-category relation", "err", err)
+			return nil, err
+		}
+	}
+
 	return t, nil
+}
+
+func (t *Term) Delete() error {
+	_, err := DB.Exec(queries.DeleteTerm, t.ID)
+	if err != nil {
+		slog.Error("Failed to delete term", "err", err)
+		return err
+	}
+
+	// 既存のカテゴリIDの関連を削除
+	_, err = DB.Exec(queries.DeleteTermCategoryRelations, t.ID)
+	if err != nil {
+		slog.Error("Failed to delete term-category relations", "err", err)
+		return err
+	}
+
+	return nil
 }

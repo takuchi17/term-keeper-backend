@@ -36,6 +36,28 @@ const (
 	UpdatedAtDesc GetTermsParamsSort = "updated_at_desc"
 )
 
+// CategoryCreateRequest defines model for CategoryCreateRequest.
+type CategoryCreateRequest struct {
+	HexColorCode *string `json:"hex_color_code,omitempty"`
+	Name         string  `json:"name"`
+}
+
+// CategoryResponse defines model for CategoryResponse.
+type CategoryResponse struct {
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	HexColorCode *string    `json:"hex_color_code,omitempty"`
+	Id           *string    `json:"id,omitempty"`
+	Name         *string    `json:"name,omitempty"`
+	UpdatedAt    *string    `json:"updated_at,omitempty"`
+}
+
+// CategoryUpdateRequest defines model for CategoryUpdateRequest.
+type CategoryUpdateRequest struct {
+	HexColorCode *string `json:"hex_color_code,omitempty"`
+	Id           string  `json:"id"`
+	Name         string  `json:"name"`
+}
+
 // ErrorResponse defines model for ErrorResponse.
 type ErrorResponse struct {
 	Message string `json:"message"`
@@ -43,9 +65,9 @@ type ErrorResponse struct {
 
 // TermCreateRequest defines model for TermCreateRequest.
 type TermCreateRequest struct {
-	Category    *string `json:"category,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        string  `json:"name"`
+	CategoryIds *[]string `json:"categoryIds,omitempty"`
+	Description *string   `json:"description,omitempty"`
+	Name        string    `json:"name"`
 }
 
 // TermListResponse defines model for TermListResponse.
@@ -53,20 +75,20 @@ type TermListResponse = []TermResponse
 
 // TermResponse defines model for TermResponse.
 type TermResponse struct {
-	Category    *string    `json:"category,omitempty"`
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Description *string    `json:"description,omitempty"`
-	Id          *string    `json:"id,omitempty"`
-	Name        *string    `json:"name,omitempty"`
-	UpdatedAt   *time.Time `json:"updated_at,omitempty"`
+	Categories  *[]CategoryResponse `json:"categories,omitempty"`
+	CreatedAt   *time.Time          `json:"created_at,omitempty"`
+	Description *string             `json:"description,omitempty"`
+	Id          *string             `json:"id,omitempty"`
+	Name        *string             `json:"name,omitempty"`
+	UpdatedAt   *time.Time          `json:"updated_at,omitempty"`
 }
 
 // TermUpdateRequest defines model for TermUpdateRequest.
 type TermUpdateRequest struct {
-	Category    *string `json:"category,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Id          string  `json:"id"`
-	Name        *string `json:"name,omitempty"`
+	CategoryIds *[]string `json:"categoryIds,omitempty"`
+	Description *string   `json:"description,omitempty"`
+	Id          string    `json:"id"`
+	Name        *string   `json:"name,omitempty"`
 }
 
 // UserCreateRequest defines model for UserCreateRequest.
@@ -78,8 +100,8 @@ type UserCreateRequest struct {
 
 // UserLoginRequest defines model for UserLoginRequest.
 type UserLoginRequest struct {
-	Email    *openapi_types.Email `json:"email,omitempty"`
-	Password *string              `json:"password,omitempty"`
+	Email    openapi_types.Email `json:"email"`
+	Password string              `json:"password"`
 }
 
 // UserLoginResponse JWT token response {userid, username, expiration}
@@ -104,6 +126,12 @@ type GetTermsParams struct {
 
 // GetTermsParamsSort defines parameters for GetTerms.
 type GetTermsParamsSort string
+
+// CreateCategoryJSONRequestBody defines body for CreateCategory for application/json ContentType.
+type CreateCategoryJSONRequestBody = CategoryCreateRequest
+
+// UpdateCategoryJSONRequestBody defines body for UpdateCategory for application/json ContentType.
+type UpdateCategoryJSONRequestBody = CategoryUpdateRequest
 
 // LoginUserJSONRequestBody defines body for LoginUser for application/json ContentType.
 type LoginUserJSONRequestBody = UserLoginRequest
@@ -193,11 +221,18 @@ type ClientInterface interface {
 	// GetCategories request
 	GetCategories(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateCategoryWithBody request with any body
+	CreateCategoryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateCategory(ctx context.Context, body CreateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// DeleteCategory request
 	DeleteCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetCategory request
-	GetCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateCategoryWithBody request with any body
+	UpdateCategoryWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateCategory(ctx context.Context, id string, body UpdateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// LoginUserWithBody request with any body
 	LoginUserWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -238,6 +273,30 @@ func (c *Client) GetCategories(ctx context.Context, reqEditors ...RequestEditorF
 	return c.Client.Do(req)
 }
 
+func (c *Client) CreateCategoryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCategoryRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateCategory(ctx context.Context, body CreateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateCategoryRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) DeleteCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteCategoryRequest(c.Server, id)
 	if err != nil {
@@ -250,8 +309,20 @@ func (c *Client) DeleteCategory(ctx context.Context, id string, reqEditors ...Re
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCategory(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetCategoryRequest(c.Server, id)
+func (c *Client) UpdateCategoryWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCategoryRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateCategory(ctx context.Context, id string, body UpdateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateCategoryRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -409,6 +480,46 @@ func NewGetCategoriesRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCreateCategoryRequest calls the generic CreateCategory builder with application/json body
+func NewCreateCategoryRequest(server string, body CreateCategoryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateCategoryRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateCategoryRequestWithBody generates requests for CreateCategory with any type of body
+func NewCreateCategoryRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/categories")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewDeleteCategoryRequest generates requests for DeleteCategory
 func NewDeleteCategoryRequest(server string, id string) (*http.Request, error) {
 	var err error
@@ -443,8 +554,19 @@ func NewDeleteCategoryRequest(server string, id string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetCategoryRequest generates requests for GetCategory
-func NewGetCategoryRequest(server string, id string) (*http.Request, error) {
+// NewUpdateCategoryRequest calls the generic UpdateCategory builder with application/json body
+func NewUpdateCategoryRequest(server string, id string, body UpdateCategoryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateCategoryRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateCategoryRequestWithBody generates requests for UpdateCategory with any type of body
+func NewUpdateCategoryRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -469,10 +591,12 @@ func NewGetCategoryRequest(server string, id string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -821,11 +945,18 @@ type ClientWithResponsesInterface interface {
 	// GetCategoriesWithResponse request
 	GetCategoriesWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCategoriesResponse, error)
 
+	// CreateCategoryWithBodyWithResponse request with any body
+	CreateCategoryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCategoryResponse, error)
+
+	CreateCategoryWithResponse(ctx context.Context, body CreateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCategoryResponse, error)
+
 	// DeleteCategoryWithResponse request
 	DeleteCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCategoryResponse, error)
 
-	// GetCategoryWithResponse request
-	GetCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCategoryResponse, error)
+	// UpdateCategoryWithBodyWithResponse request with any body
+	UpdateCategoryWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCategoryResponse, error)
+
+	UpdateCategoryWithResponse(ctx context.Context, id string, body UpdateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCategoryResponse, error)
 
 	// LoginUserWithBodyWithResponse request with any body
 	LoginUserWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*LoginUserResponse, error)
@@ -857,7 +988,7 @@ type ClientWithResponsesInterface interface {
 type GetCategoriesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]string
+	JSON200      *[]CategoryResponse
 	JSON401      *ErrorResponse
 	JSON403      *ErrorResponse
 }
@@ -872,6 +1003,31 @@ func (r GetCategoriesResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetCategoriesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateCategoryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *CategoryResponse
+	JSON400      *ErrorResponse
+	JSON401      *ErrorResponse
+	JSON403      *ErrorResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateCategoryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateCategoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -903,10 +1059,10 @@ func (r DeleteCategoryResponse) StatusCode() int {
 	return 0
 }
 
-type GetCategoryResponse struct {
+type UpdateCategoryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *string
+	JSON200      *CategoryResponse
 	JSON400      *ErrorResponse
 	JSON401      *ErrorResponse
 	JSON403      *ErrorResponse
@@ -914,7 +1070,7 @@ type GetCategoryResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetCategoryResponse) Status() string {
+func (r UpdateCategoryResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -922,7 +1078,7 @@ func (r GetCategoryResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetCategoryResponse) StatusCode() int {
+func (r UpdateCategoryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -1084,6 +1240,23 @@ func (c *ClientWithResponses) GetCategoriesWithResponse(ctx context.Context, req
 	return ParseGetCategoriesResponse(rsp)
 }
 
+// CreateCategoryWithBodyWithResponse request with arbitrary body returning *CreateCategoryResponse
+func (c *ClientWithResponses) CreateCategoryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateCategoryResponse, error) {
+	rsp, err := c.CreateCategoryWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCategoryResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateCategoryWithResponse(ctx context.Context, body CreateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateCategoryResponse, error) {
+	rsp, err := c.CreateCategory(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateCategoryResponse(rsp)
+}
+
 // DeleteCategoryWithResponse request returning *DeleteCategoryResponse
 func (c *ClientWithResponses) DeleteCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DeleteCategoryResponse, error) {
 	rsp, err := c.DeleteCategory(ctx, id, reqEditors...)
@@ -1093,13 +1266,21 @@ func (c *ClientWithResponses) DeleteCategoryWithResponse(ctx context.Context, id
 	return ParseDeleteCategoryResponse(rsp)
 }
 
-// GetCategoryWithResponse request returning *GetCategoryResponse
-func (c *ClientWithResponses) GetCategoryWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*GetCategoryResponse, error) {
-	rsp, err := c.GetCategory(ctx, id, reqEditors...)
+// UpdateCategoryWithBodyWithResponse request with arbitrary body returning *UpdateCategoryResponse
+func (c *ClientWithResponses) UpdateCategoryWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateCategoryResponse, error) {
+	rsp, err := c.UpdateCategoryWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetCategoryResponse(rsp)
+	return ParseUpdateCategoryResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateCategoryWithResponse(ctx context.Context, id string, body UpdateCategoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateCategoryResponse, error) {
+	rsp, err := c.UpdateCategory(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateCategoryResponse(rsp)
 }
 
 // LoginUserWithBodyWithResponse request with arbitrary body returning *LoginUserResponse
@@ -1203,11 +1384,58 @@ func ParseGetCategoriesResponse(rsp *http.Response) (*GetCategoriesResponse, err
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []string
+		var dest []CategoryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateCategoryResponse parses an HTTP response from a CreateCategoryWithResponse call
+func ParseCreateCategoryResponse(rsp *http.Response) (*CreateCategoryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateCategoryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest CategoryResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ErrorResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest ErrorResponse
@@ -1275,22 +1503,22 @@ func ParseDeleteCategoryResponse(rsp *http.Response) (*DeleteCategoryResponse, e
 	return response, nil
 }
 
-// ParseGetCategoryResponse parses an HTTP response from a GetCategoryWithResponse call
-func ParseGetCategoryResponse(rsp *http.Response) (*GetCategoryResponse, error) {
+// ParseUpdateCategoryResponse parses an HTTP response from a UpdateCategoryWithResponse call
+func ParseUpdateCategoryResponse(rsp *http.Response) (*UpdateCategoryResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetCategoryResponse{
+	response := &UpdateCategoryResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest string
+		var dest CategoryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -1586,25 +1814,28 @@ func ParseUpdateTermResponse(rsp *http.Response) (*UpdateTermResponse, error) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

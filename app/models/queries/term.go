@@ -23,7 +23,7 @@ VALUES
 
 const GetTermsByUserIdBase = `
 SELECT 
-	t.id, t.fk_user_id, t.name, t.description, t.category, t.created_at, t.updated_at
+	t.id, t.fk_user_id, t.name, t.description, t.created_at, t.updated_at
 FROM 
 	terms t
 `
@@ -50,9 +50,11 @@ AND
 	r.fk_category_id = ?
 `
 
-const GetTermsFillterByChecked = `
-AND
-	t.checked = ?
+const GetTermsFilterByChecked = `
+AND 
+	(CASE WHEN ? = true THEN (t.description IS NULL OR t.description = '') 
+	      ELSE (t.description IS NOT NULL AND t.description != '')
+	END)
 `
 
 const GetTermsSortByCreatedAsc = `
@@ -90,4 +92,14 @@ UPDATE
 	terms
 SET
 	name = ?, description = ?, category = ?, updated_at = ?
+WHERE
+	id = ?
+`
+
+const DeleteTerm = `
+DELETE
+FROM
+	terms
+WHERE
+	id = ?
 `

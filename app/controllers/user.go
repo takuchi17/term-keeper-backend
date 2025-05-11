@@ -61,7 +61,7 @@ func (h *UserHandeler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := models.GetUserByEmail(models.Email(*ReqestBody.Email))
+	user, err := models.GetUserByEmail(models.Email(ReqestBody.Email))
 	if err != nil {
 		slog.Warn("Failed to get user by email", "err", err)
 		errorResponse := api.ErrorResponse{Message: "Failed to get user by email"}
@@ -70,7 +70,7 @@ func (h *UserHandeler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(errorJSON), http.StatusInternalServerError)
 	}
 
-	if err := models.IsSamePassword(user.Password, models.Password(*ReqestBody.Password)); err != nil {
+	if err := models.IsSamePassword(user.Password, models.Password(ReqestBody.Password)); err != nil {
 		slog.Warn("Failed to check password", "err", err)
 		errorResponse := api.ErrorResponse{Message: "Failed to check password"}
 		errorJSON, _ := json.Marshal(errorResponse)
