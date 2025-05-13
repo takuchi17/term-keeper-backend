@@ -52,9 +52,11 @@ AND
 
 const GetTermsFilterByChecked = `
 AND 
-	(CASE WHEN ? = true THEN (t.description IS NULL OR t.description = '') 
-	      ELSE (t.description IS NOT NULL AND t.description != '')
-	END)
+  (
+    (? = true AND t.description IS NOT NULL AND t.description != '') OR
+    (? = false AND (t.description IS NULL OR t.description = '')) OR
+    (? IS NULL)
+  )
 `
 
 const GetTermsSortByCreatedAsc = `

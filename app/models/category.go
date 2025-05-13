@@ -17,8 +17,8 @@ type Category struct {
 	Name         CategoryName
 	FKUserId     CategoryUserId
 	HexColorCode CategoryHexColorCode
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
 }
 
 // 単体取得

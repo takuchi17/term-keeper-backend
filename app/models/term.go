@@ -23,11 +23,11 @@ type Term struct {
 	FKUserId    TermUserId
 	Name        TermName
 	Description TermDescription
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
 }
 
-type TermAndCategory struct {
+type TermAndCategories struct {
 	Term       *Term
 	Categories []*Category
 }
@@ -48,7 +48,6 @@ func CreateTerm(db SQLExecutor, userId TermUserId, name TermName, description Te
 		return nil, err
 	}
 
-	// カテゴリIDを term_category_relations テーブルに挿入
 	err = LinkTermWithCategories(db, termId, categoryIds)
 	if err != nil {
 		slog.Error("Failed to link term with categories", "err", err)
@@ -60,33 +59,31 @@ func CreateTerm(db SQLExecutor, userId TermUserId, name TermName, description Te
 			FKUserId:    userId,
 			Name:        name,
 			Description: description,
-			CreatedAt:   t,
-			UpdatedAt:   t,
+			CreatedAt:   &t,
+			UpdatedAt:   &t,
 		},
 		nil
 }
 
-func GetTermsWithCategoriesByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*TermAndCategory, error) {
+func GetTermsWithCategoriesByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *string) ([]*TermAndCategories, error) {
 	terms, err := GetTermsByUserId(db, userId, query, category, sort, checked)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*TermAndCategory
+	var result []*TermAndCategories
 	for _, term := range terms {
-		// 中間テーブルからcategoryIdを取得
 		categoryIds, err := GetCategoryIdsByTermId(db, term.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		// カテゴリ情報を取得
 		categories, err := GetCategoriesByIds(db, categoryIds)
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, &TermAndCategory{
+		result = append(result, &TermAndCategories{
 			Term:       term,
 			Categories: categories,
 		})
@@ -95,34 +92,46 @@ func GetTermsWithCategoriesByUserId(db SQLExecutor, userId TermUserId, query *st
 	return result, nil
 }
 
-func GetTermsByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *bool) ([]*Term, error) {
+func GetTermsByUserId(db SQLExecutor, userId TermUserId, query *string, category *string, sort *string, checked *string) ([]*Term, error) {
 	var sb strings.Builder
 	var args []interface{}
 
 	sb.WriteString(queries.GetTermsByUserIdBase)
 
-	if category != nil {
+	if category != nil && *category != "" {
 		sb.WriteString(queries.GetTermsJoinWithCategory)
 	}
 
 	sb.WriteString(queries.GetTermsByUserIdWhere)
 	args = append(args, userId)
 
-	if query != nil {
+	if query != nil && *query != "" {
 		sb.WriteString(queries.GetTermsFillterByName)
 		args = append(args, "%"+*query+"%")
 	}
-	if category != nil {
+
+	if category != nil && *category != "" {
 		sb.WriteString(queries.GetTermsFillterByCategory)
 		args = append(args, *category)
 	}
 
 	if checked != nil {
+		checkedVal := strings.ToLower(*checked)
+		var checkedBoolPtr *bool
+
+		if checkedVal == "true" {
+			tmp := true
+			checkedBoolPtr = &tmp
+		} else if checkedVal == "false" {
+			tmp := false
+			checkedBoolPtr = &tmp
+		}
+
 		sb.WriteString(queries.GetTermsFilterByChecked)
-		args = append(args, *checked)
+		args = append(args, checkedBoolPtr, checkedBoolPtr, checkedBoolPtr)
 	}
 
-	// ソート
+	// ソートの設定
 	if sort != nil {
 		switch *sort {
 		case "created_at_asc":
