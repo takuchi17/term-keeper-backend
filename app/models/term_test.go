@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/takuchi17/term-keeper/pkg/util"
 )
 
 func TestCreateTerm(t *testing.T) {
@@ -138,7 +139,7 @@ func TestGetTermsByUserId(t *testing.T) {
 		query         *string
 		category      *string
 		sort          *string
-		checked       *bool
+		checked       *string
 		expectedCount int
 		expectedTerms []string
 		wantErr       bool
@@ -244,7 +245,7 @@ func TestGetTermsWithCategoriesByUserId(t *testing.T) {
 		query         *string
 		category      *string
 		sort          *string
-		checked       *bool
+		checked       *string
 		expectedCount int
 		expectedTerm  string
 		expectedCats  []string
@@ -362,7 +363,7 @@ func TestTermUpdate(t *testing.T) {
 			// Apply changes
 			term.Name = tc.newName
 			term.Description = tc.newDescription
-			term.UpdatedAt = time.Now()
+			term.UpdatedAt = util.Ptr(time.Now())
 
 			// Update term
 			updatedTerm, err := term.Update(tx, tc.newCategories)

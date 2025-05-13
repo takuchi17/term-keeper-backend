@@ -7,6 +7,7 @@ import (
 
 	"github.com/takuchi17/term-keeper/api"
 	"github.com/takuchi17/term-keeper/app/models"
+	"github.com/takuchi17/term-keeper/pkg/http_checker"
 	"github.com/takuchi17/term-keeper/pkg/jwt"
 )
 
@@ -14,22 +15,18 @@ type UserHandeler struct {
 	DB models.SQLExecutor
 }
 
-func (h *UserHandeler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var ReqestBody api.CreateUserJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&ReqestBody); err != nil {
-		slog.Warn("Failed to decode request body", "err", err)
-		errorRespose := api.ErrorResponse{Message: "Invalid request body"}
-		errorJSON, _ := json.Marshal(errorRespose)
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, string(errorJSON), http.StatusBadRequest)
+func (h *UserHandeler) Create(w http.ResponseWriter, r *http.Request) {
+	var requestBody api.CreateUserJSONRequestBody
+	if err := http_checker.CheckRequest(w, r, &requestBody); err != nil {
+		slog.Warn("Failed to check request", "err", err)
 		return
 	}
 
 	err := models.CreateUser(
 		h.DB,
-		models.UserName(ReqestBody.Username),
-		models.Email(ReqestBody.Email),
-		models.Password(ReqestBody.Password),
+		models.UserName(requestBody.Username),
+		models.Email(requestBody.Email),
+		models.Password(requestBody.Password),
 	)
 
 	if err != nil {
@@ -45,26 +42,13 @@ func (h *UserHandeler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandeler) Login(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		slog.Warn("Invalid request method", "method", r.Method)
-		errorResponse := api.ErrorResponse{Message: "Invalid request method"}
-		errorJSON, _ := json.Marshal(errorResponse)
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, string(errorJSON), http.StatusMethodNotAllowed)
+	var requestBody api.UserLoginRequest
+	if err := http_checker.CheckRequest(w, r, &requestBody); err != nil {
+		slog.Warn("Failed to check request", "err", err)
 		return
 	}
 
-	var ReqestBody api.UserLoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&ReqestBody); err != nil {
-		slog.Warn("Failed to decode request body", "err", err)
-		errorResponse := api.ErrorResponse{Message: "Invalid request body"}
-		errorJSON, _ := json.Marshal(errorResponse)
-		w.Header().Set("Content-Type", "application/json")
-		http.Error(w, string(errorJSON), http.StatusBadRequest)
-		return
-	}
-
-	user, err := models.GetUserByEmail(h.DB, models.Email(ReqestBody.Email))
+	user, err := models.GetUserByEmail(h.DB, models.Email(requestBody.Email))
 	if err != nil {
 		slog.Warn("Failed to get user by email", "err", err)
 		errorResponse := api.ErrorResponse{Message: "Failed to get user by email"}
@@ -73,7 +57,7 @@ func (h *UserHandeler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, string(errorJSON), http.StatusInternalServerError)
 	}
 
-	if err := models.IsSamePassword(h.DB, user.Password, models.Password(ReqestBody.Password)); err != nil {
+	if err := models.IsSamePassword(h.DB, user.Password, models.Password(requestBody.Password)); err != nil {
 		slog.Warn("Failed to check password", "err", err)
 		errorResponse := api.ErrorResponse{Message: "Failed to check password"}
 		errorJSON, _ := json.Marshal(errorResponse)

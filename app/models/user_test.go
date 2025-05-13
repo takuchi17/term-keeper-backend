@@ -49,6 +49,20 @@ func TestCreateUser(t *testing.T) {
 			password: "password",
 			wantErr:  true,
 		},
+		{
+			name:     "Duplicate username allowed",
+			username: "example1",
+			email:    "example_duplicate_username@gmail.com",
+			password: "password",
+			wantErr:  false,
+		},
+		{
+			name:     "Invalid email format",
+			username: "invalidemail",
+			email:    "invalid-email",
+			password: "password",
+			wantErr:  false,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -231,4 +245,20 @@ func TestGetUserByEmail(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIsSamePassword(t *testing.T) {
+	raw := "mypassword"
+	hashed, err := bcrypt.GenerateFromPassword([]byte(raw), bcrypt.DefaultCost)
+	require.NoError(t, err)
+
+	t.Run("Correct password", func(t *testing.T) {
+		err := IsSamePassword(DB, HashedPassword(hashed), Password(raw))
+		assert.NoError(t, err)
+	})
+
+	t.Run("Wrong password", func(t *testing.T) {
+		err := IsSamePassword(DB, HashedPassword(hashed), Password("wrongpass"))
+		assert.Error(t, err)
+	})
 }
